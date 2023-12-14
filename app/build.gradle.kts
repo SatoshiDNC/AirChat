@@ -4,7 +4,7 @@ plugins {
 
 android {
     namespace = "com.satoshidnc.airchat"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.satoshidnc.airchat"

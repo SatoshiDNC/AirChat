@@ -1,11 +1,13 @@
 package com.satoshidnc.airchat;
 
+import android.content.Context;
 import android.os.Bundle;
 
 import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.view.LayoutInflater;
 import android.view.View;
 
 import androidx.core.view.WindowCompat;
@@ -18,6 +20,8 @@ import com.satoshidnc.airchat.databinding.ActivityMainBinding;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -40,9 +44,18 @@ public class MainActivity extends AppCompatActivity {
         binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAnchorView(R.id.fab)
-                        .setAction("Action", null).show();
+                LinearLayout options_layout = (LinearLayout) findViewById(R.id.options_list);
+                LayoutInflater inflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                View to_add = inflater.inflate(R.layout.own_message,
+                        options_layout,false);
+
+                TextView text = (TextView) to_add.findViewById(R.id.textView);
+                text.setText("xyz");
+                options_layout.addView(to_add);
+
+//                Snackbar.make(view, "Added", Snackbar.LENGTH_LONG)
+//                        .setAnchorView(R.id.fab)
+//                        .setAction("Action", null).show();
             }
         });
     }

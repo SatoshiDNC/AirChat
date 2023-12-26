@@ -16,6 +16,7 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import androidx.work.OneTimeWorkRequest;
+import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
 import com.satoshidnc.airchat.databinding.ActivityMainBinding;
@@ -24,6 +25,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import java.time.Duration;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -61,7 +64,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        OneTimeWorkRequest workRequest = new OneTimeWorkRequest.Builder(AirChatWorker.class).build();
+        WorkManager.getInstance(this).cancelAllWork();
+        PeriodicWorkRequest workRequest = new PeriodicWorkRequest.Builder(AirChatWorker.class, Duration.ofMinutes(15)).build();
         WorkManager.getInstance(this).enqueue(workRequest);
     }
 

@@ -43,4 +43,6 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     implementation("androidx.work:work-runtime:2.9.0")
     implementation("com.neovisionaries:nv-websocket-client:2.14")
+    implementation("androidx.webkit:webkit:1.9.0")
+    implementation("commons-io:commons-io:2.4")
 }

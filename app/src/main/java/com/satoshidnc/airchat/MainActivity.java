@@ -1,16 +1,21 @@
 package com.satoshidnc.airchat;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 
 import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 
 import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -23,46 +28,116 @@ import com.satoshidnc.airchat.databinding.ActivityMainBinding;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowInsets;
+import android.webkit.WebChromeClient;
+import android.webkit.WebView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.Duration;
+
+import org.apache.commons.io.IOUtils;
 
 public class MainActivity extends AppCompatActivity {
 
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
 
+    @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+        int currentApiVersion = android.os.Build.VERSION.SDK_INT;
 
-        setSupportActionBar(binding.toolbar);
+        final int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
 
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+        // This work only for android 4.4+
+        if(currentApiVersion >= Build.VERSION_CODES.KITKAT)
+        {
 
-        binding.fab.setOnClickListener(new View.OnClickListener() {
+            getWindow().getDecorView().setSystemUiVisibility(flags);
+
+            // Code below is to handle presses of Volume up or Volume down.
+            // Without this, after pressing volume buttons, the navigation bar will
+            // show up and won't hide
+            final View decorView = getWindow().getDecorView();
+            decorView
+                    .setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener()
+                    {
+
+                        @Override
+                        public void onSystemUiVisibilityChange(int visibility)
+                        {
+                            if((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0)
+                            {
+                                decorView.setSystemUiVisibility(flags);
+                            }
+                        }
+                    });
+        }
+
+        WebChromeClient webChromeClient = new WebChromeClient() {
             @Override
-            public void onClick(View view) {
-                LinearLayout options_layout = (LinearLayout) findViewById(R.id.options_list);
-                LayoutInflater inflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                View to_add = inflater.inflate(R.layout.own_message,
-                        options_layout,false);
-
-                TextView text = (TextView) to_add.findViewById(R.id.textView);
-                text.setText("xyz");
-                options_layout.addView(to_add);
-
-//                Snackbar.make(view, "Added", Snackbar.LENGTH_LONG)
-//                        .setAnchorView(R.id.fab)
-//                        .setAction("Action", null).show();
+            public void onShowCustomView(View view, CustomViewCallback callback) {
+                Log.w("WARN", "SHOW NOT IMPLEMENTED");
             }
-        });
+            @Override
+            public void onHideCustomView() {
+                Log.w("WARN", "HIDE NOT IMPLEMENTED");
+            }
+        };
+
+        WebView root = new WebView(this);
+        setContentView(root);
+        root.getSettings().setJavaScriptEnabled(true);
+        root.setWebChromeClient(webChromeClient);
+        //root.loadUrl("https://ng.satoshidnc.com");
+        InputStream is = getResources().openRawResource(R.raw.index);
+        String s;
+        try {
+            s = IOUtils.toString(is);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        IOUtils.closeQuietly(is);
+        root.loadDataWithBaseURL("https://ng.satoshidnc.com",
+                s,
+                "text/html", null,null);
+
+//        binding = ActivityMainBinding.inflate(getLayoutInflater());
+//        setContentView(binding.getRoot());
+//
+//        setSupportActionBar(binding.toolbar);
+//
+//        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+//        appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
+//        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+//
+//        binding.fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                LinearLayout options_layout = (LinearLayout) findViewById(R.id.options_list);
+//                LayoutInflater inflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//                View to_add = inflater.inflate(R.layout.own_message,
+//                        options_layout,false);
+//
+//                TextView text = (TextView) to_add.findViewById(R.id.textView);
+//                text.setText("xyz");
+//                options_layout.addView(to_add);
+//
+////                Snackbar.make(view, "Added", Snackbar.LENGTH_LONG)
+////                        .setAnchorView(R.id.fab)
+////                        .setAction("Action", null).show();
+//            }
+//        });
 
         WorkManager.getInstance(this).cancelAllWork();
         PeriodicWorkRequest workRequest = new PeriodicWorkRequest.Builder(AirChatWorker.class, Duration.ofMinutes(15)).build();

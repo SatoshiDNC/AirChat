@@ -15,6 +15,8 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import com.satoshidnc.airchat.databinding.ActivityMainBinding;
 
@@ -58,6 +60,9 @@ public class MainActivity extends AppCompatActivity {
 //                        .setAction("Action", null).show();
             }
         });
+
+        OneTimeWorkRequest workRequest = new OneTimeWorkRequest.Builder(AirChatWorker.class).build();
+        WorkManager.getInstance(this).enqueue(workRequest);
     }
 
     @Override

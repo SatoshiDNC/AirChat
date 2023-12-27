@@ -1,10 +1,14 @@
 package com.satoshidnc.airchat;
 
+import static androidx.core.content.ContextCompat.getSystemService;
+
 import android.content.Context;
+import android.media.AudioManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.util.Log;
+import android.view.SoundEffectConstants;
 
 import androidx.annotation.NonNull;
 import androidx.work.Worker;
@@ -24,13 +28,15 @@ public class AirChatWorker extends Worker {
     public Result doWork() {
         Log.i(AirChatWorker.class.getSimpleName(),"doWork()");
 
-        try {
-            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
-            r.play();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        AudioManager audioManager = (AudioManager)this.getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
+        audioManager.playSoundEffect(AudioManager.FX_KEY_CLICK);
+//        try {
+//            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+//            Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+//            r.play();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
         try {
             new WebSocketFactory()
@@ -48,9 +54,9 @@ public class AirChatWorker extends Worker {
                 .connect()
                 .sendText("Hello.");
         } catch (WebSocketException e) {
-            throw new RuntimeException(e);
+            Log.e(AirChatWorker.class.getSimpleName(), e.toString());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            Log.e(AirChatWorker.class.getSimpleName(), e.toString());
         }
 
         return Result.success();

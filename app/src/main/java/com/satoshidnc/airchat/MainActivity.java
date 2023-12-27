@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.SoundEffectConstants;
 import android.view.View;
 
 import androidx.core.view.WindowCompat;
@@ -45,8 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
 
-    @SuppressLint("SetJavaScriptEnabled")
-    @Override
+    @Override @SuppressLint("SetJavaScriptEnabled")
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -69,36 +69,36 @@ public class MainActivity extends AppCompatActivity {
             // Without this, after pressing volume buttons, the navigation bar will
             // show up and won't hide
             final View decorView = getWindow().getDecorView();
-            decorView
-                    .setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener()
+            decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+                @Override
+                public void onSystemUiVisibilityChange(int visibility)
+                {
+                    if((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0)
                     {
-
-                        @Override
-                        public void onSystemUiVisibilityChange(int visibility)
-                        {
-                            if((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0)
-                            {
-                                decorView.setSystemUiVisibility(flags);
-                            }
-                        }
-                    });
+                        decorView.setSystemUiVisibility(flags);
+                    }
+                }
+            });
         }
 
-        WebChromeClient webChromeClient = new WebChromeClient() {
-            @Override
-            public void onShowCustomView(View view, CustomViewCallback callback) {
-                Log.w("WARN", "SHOW NOT IMPLEMENTED");
-            }
-            @Override
-            public void onHideCustomView() {
-                Log.w("WARN", "HIDE NOT IMPLEMENTED");
-            }
-        };
+//        WebChromeClient webChromeClient = new WebChromeClient() {
+//            @Override
+//            public void onShowCustomView(View view, CustomViewCallback callback) {
+//                Log.w("WARN", "SHOW NOT IMPLEMENTED");
+//            }
+//            @Override
+//            public void onHideCustomView() {
+//                Log.w("WARN", "HIDE NOT IMPLEMENTED");
+//            }
+//        };
 
         WebView root = new WebView(this);
         setContentView(root);
         root.getSettings().setJavaScriptEnabled(true);
-        root.setWebChromeClient(webChromeClient);
+        //root.setWebChromeClient(webChromeClient);
+
+        root.addJavascriptInterface(new WebUtils(this), "Android");
+
         //root.loadUrl("https://ng.satoshidnc.com");
         InputStream is = getResources().openRawResource(R.raw.index);
         String s;
@@ -108,9 +108,12 @@ public class MainActivity extends AppCompatActivity {
             throw new RuntimeException(e);
         }
         IOUtils.closeQuietly(is);
-        root.loadDataWithBaseURL("https://ng.satoshidnc.com",
-                s,
-                "text/html", null,null);
+        //root.setSoundEffectsEnabled(true);
+        //root.playSoundEffect(SoundEffectConstants.CLICK);
+        Log.i("Info", "len: " + s.length());
+        root.loadDataWithBaseURL("https://ng.satoshidnc.com", s, "text/html", null,null);
+        //root.loadUrl("https://dev-ng.satoshidnc.com");
+
 
 //        binding = ActivityMainBinding.inflate(getLayoutInflater());
 //        setContentView(binding.getRoot());

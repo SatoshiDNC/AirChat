@@ -1,8 +1,17 @@
+import com.android.build.gradle.internal.tasks.factory.dependsOn
+
 plugins {
     id("com.android.application")
 }
 
+tasks.register<Copy>("preCopy") {
+    from(layout.projectDirectory.file("../web/index.html"))
+    into(layout.projectDirectory.dir("src/main/res/raw"))
+    rename("(.+)[.]html", "$1.raw")
+}
+
 android {
+    project.tasks.preBuild.dependsOn("preCopy")
     namespace = "com.satoshidnc.airchat"
     compileSdk = 34
 
